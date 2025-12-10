@@ -2,15 +2,20 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
+
 public class PlayerControls : MonoBehaviour
 {
     Player inputActions;
     CharacterController characterController;
     [SerializeField]Transform playerCamera;
-    float sensibility = 2;
+    public float sensibility = 2;
     float pitch = 0f;
     public float jumpForce=20;
+    public float gravity = 9.81f;
+    Vector3 velocity;
     CinemachineVolumeSettings volume;
+
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -19,6 +24,9 @@ public class PlayerControls : MonoBehaviour
         characterController = GetComponent<CharacterController>();
 
         inputActions.Keyboard.Jump.performed += Jump;
+        Cursor.lockState= CursorLockMode.Locked;
+         
+        
     }
 
     private void OnDisable()
@@ -30,18 +38,28 @@ public class PlayerControls : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-       Vector2 movement = inputActions.Keyboard.Move.ReadValue<Vector2>();
+       Vector3 movementInput = new Vector3( inputActions.Keyboard.Move.ReadValue<Vector2>().x,0, inputActions.Keyboard.Move.ReadValue<Vector2>().y)*Time.deltaTime;
+        Vector3 movement = (transform.forward * movementInput.z + transform.right * movementInput.x);
         Debug.Log(movement);
-        characterController.Move(movement);
+        characterController.Move(movementInput);
 
         Look( inputActions.Keyboard.Look.ReadValue<Vector2>()*Time.deltaTime);
-        
+        if (!characterController.isGrounded)
+        {
+
+            velocity += Vector3.down*gravity*Time.deltaTime;
+            characterController.Move(velocity);
+        }
     }
 
     void Jump(InputAction.CallbackContext ctx)
     {
-        characterController.Move(characterController.velocity + new Vector3(0, jumpForce, 0));
+        if (characterController.isGrounded)
+        velocity.y= jumpForce*.1f;
     }
+
+
+
 
     void Look(Vector2 lookDirection) 
     {

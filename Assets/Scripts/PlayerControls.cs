@@ -1,3 +1,4 @@
+﻿using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -6,7 +7,10 @@ public class PlayerControls : MonoBehaviour
     Player inputActions;
     CharacterController characterController;
     [SerializeField]Transform playerCamera;
+    float sensibility = 2;
+    float pitch = 0f;
     public float jumpForce=20;
+    CinemachineVolumeSettings volume;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -30,13 +34,23 @@ public class PlayerControls : MonoBehaviour
         Debug.Log(movement);
         characterController.Move(movement);
 
-        Vector2 lookDirection= inputActions.Keyboard.Look.ReadValue<Vector2>();
-        gameObject.transform.Rotate(new Vector3(lookDirection.y,0,0));
-        playerCamera.Rotate(new Vector3(0,-lookDirection.x,0));
+        Look( inputActions.Keyboard.Look.ReadValue<Vector2>()*Time.deltaTime);
+        
     }
 
     void Jump(InputAction.CallbackContext ctx)
     {
         characterController.Move(characterController.velocity + new Vector3(0, jumpForce, 0));
+    }
+
+    void Look(Vector2 lookDirection) 
+    {
+    
+        gameObject.transform.Rotate(Vector3.up*lookDirection.x);
+        pitch -= lookDirection.y*sensibility;
+        pitch = Mathf.Clamp(pitch, -80f, 80f);
+
+        
+        playerCamera.localRotation = Quaternion.Euler(pitch, 0f, 0f);
     }
 }

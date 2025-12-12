@@ -3,7 +3,7 @@ using System;
 
 public class Events : MonoBehaviour
 {
-    public Events instance;
+    public static Events instance;
     public static event Action SwitchReality;
 
     private void Awake()
@@ -16,5 +16,9 @@ public class Events : MonoBehaviour
         {
             Destroy(this);
         }
+    }
+    public void CallRealityEvent()
+    {
+        SwitchReality?.Invoke();
     }
 }
